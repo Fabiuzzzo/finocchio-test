@@ -7,6 +7,30 @@
 .goalrow:has(.practicesel){background:#fff7e6;border-left:4px solid #e9a529;padding-left:9px}
 .errorchip.picked{background:#e9a529!important;border:2px solid #a66b00!important;color:#231a08!important;font-weight:800}
 .goalactions button:focus-visible,.errorchip:focus-visible{outline:3px solid #2356b4;outline-offset:2px}
+</style><style>
+/* Version 0.12: Ruhige, vollständig farbige 2D-Kalendereinträge. */
+.calendar .event,
+.calendar .event.red,
+.calendar .event.gray,
+.calendar .event.blue,
+.calendar .event.yellow {
+  border: 0 !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  filter: none !important;
+  transform: none;
+  outline: 0;
+  padding: 6px 7px !important;
+  transition: none !important;
+  text-shadow: none !important;
+}
+.calendar .event.red {background-color:#d93636 !important;color:#fff !important;}
+.calendar .event.gray {background-color:#777d86 !important;color:#fff !important;}
+.calendar .event.blue {background-color:#173d83 !important;color:#fff !important;}
+.calendar .event.yellow {background-color:#f4ce46 !important;color:#302700 !important;}
+.calendar .event strong,.calendar .event .sub,.calendar .event .exam {text-shadow:none !important;}
+.calendar .event:hover,.calendar .event:focus {box-shadow:none !important;filter:none !important;}
 </style></head><body><div class="shell"><aside class="sidebar"><div class="brand">FINOCCHIO<small>FAHRSCHULE</small></div><nav class="nav"><button data-page="calendar" class="active">▦ &nbsp; Kalender</button><button data-page="students">♙ &nbsp; Schüler</button><button data-page="reports">▥ &nbsp; Statistiken</button><button data-page="billing">▤ &nbsp; Rechnungen</button><button data-page="settings">⚙ &nbsp; Einstellungen</button></nav><div class="sidefoot">Prototyp 0.11a<br>Lokale Demo · keine echten E-Mails<br><br>Admin · FF</div></aside><main class="main"><div class="top"><div><h1 id="pagetitle">Wochenkalender</h1><div class="subtitle" id="pagesub">Alle Fahrlehrer auf einen Blick</div></div><div class="topright"><span class="pill">● &nbsp; Demo-Modus</span><button class="primary" id="addbtn">＋ Neuer Termin</button></div></div>
 <section id="calendarpage" class="card"><div class="toolbar"><div class="tools"><button class="secondary" id="prev">‹</button><button class="secondary" id="current">Heute</button><button class="secondary" id="next">›</button><h2 id="weeklabel" style="margin-left:8px"></h2></div><div class="tools"><span class="tag">Wochenansicht</span><button class="secondary" id="reset">Demo zurücksetzen</button></div></div><div class="filters"><label class="check"><input type="checkbox" data-teacher="FF" checked><span class="dot" style="background:#1c5ab4"></span> Fabian (FF)</label><label class="check"><input type="checkbox" data-teacher="GF" checked><span class="dot" style="background:#42a09b"></span> Giuseppe (GF)</label><label class="check"><input type="checkbox" data-teacher="AW" checked><span class="dot" style="background:#ad72c5"></span> Aldo (AW)</label><div class="legend"><span><i class="dot" style="background:#d93636"></i> Motorrad</span><span><i class="dot" style="background:#939aa6"></i> Automat / BE / BPT</span><span><i class="dot" style="background:#173d83"></i> Schaltung</span><span><i class="dot" style="background:#edc13a"></i> VKU</span></div></div><div class="calendarwrap"><div class="calendar" id="calendar"></div></div><div class="notice">💡 Freies Zeitfeld lange drücken, um dort einen Termin einzutragen · Termin antippen zum Bearbeiten · auf einen anderen Tag ziehen zum Verschieben · am unteren Rand ziehen zum Verlängern. Die Änderungen werden nur lokal in diesem Browser gespeichert.</div></section>
 <section id="studentspage" class="card hidden"><div class="toolbar"><h2>Schülerverwaltung</h2><div class="tools"><input class="search" id="studentsearch" placeholder="Schüler suchen …"><button class="primary" id="addstudent">＋ Schüler hinzufügen</button></div></div><div class="panel" id="studentsbody"></div></section>
