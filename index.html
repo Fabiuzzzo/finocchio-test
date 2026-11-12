@@ -385,7 +385,135 @@ const INVOICE_LOGO_DEFAULT_0299='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQAB
 const INVOICE_DEFAULT_0299={company:'Fahrschule Finocchio',street:'Kasernenstrasse 15',place:'CH-8180 Bülach',phone:'+41 79 300 33 11',email:'fabian.finocchio@fahrschule-finocchio.ch',web:'www.fahrschule-finocchio.ch',intro:'Wie vereinbart übersende ich dir hiermit die Monatsrechnung für den in unserer Fahrschule erbrachten Unterricht.',closing:'Besten Dank für das entgegengebrachte Vertrauen.\n\nFreundliche Grüsse\nFahrschule Finocchio',terms:'Zahlungskonditionen: 14 Tage netto ab Rechnungsdatum.',addressX:112,addressY:57,logo:INVOICE_LOGO_DEFAULT_0299};
 function getInvoiceLayout0299(){try{return {...INVOICE_DEFAULT_0299,...JSON.parse(localStorage.getItem(INVOICE_LAYOUT_KEY_0299)||'{}')}}catch(_){return {...INVOICE_DEFAULT_0299}}}
 function saveInvoiceLayout0299(x){try{localStorage.setItem(INVOICE_LAYOUT_KEY_0299,JSON.stringify(x));return true}catch(e){alert('Speichern nicht möglich. Logo ist eventuell zu gross.');return false}}
-function initInvoiceSettings0299(){const root=document.querySelector('#settingspage .panel');if(!root)return;const div=document.createElement('div');div.id='invoice-layout-0299';div.innerHTML=`<hr style="margin:28px 0;border:0;border-top:1px solid #dde4ee"><h2>Rechnungslayout · Version 0.29.14</h2><p class="smallmuted">Rechnung Seite 1 im bisherigen Stil. Empfängeradresse rechts für A5-Fensterumschläge. Seite 2 ist als Platzhalter für den späteren Schweizer QR-Zahlteil reserviert. PDF über Drucken → Als PDF sichern.</p><div class="formgrid"><label class="field">Firmenname<input data-inv-field="company"></label><label class="field">Strasse<input data-inv-field="street"></label><label class="field">PLZ / Ort<input data-inv-field="place"></label><label class="field">Telefon<input data-inv-field="phone"></label><label class="field">E-Mail<input data-inv-field="email"></label><label class="field">Website<input data-inv-field="web"></label><label class="field full">Begleittext<textarea data-inv-field="intro" rows="3"></textarea></label><label class="field full">Zahlungsbedingungen<textarea data-inv-field="terms" rows="2"></textarea></label><label class="field full">Grussformel<textarea data-inv-field="closing" rows="4"></textarea></label><label class="field">Empfängeradresse von links (mm)<input type="number" min="80" max="150" step="1" data-inv-field="addressX"></label><label class="field">Empfängeradresse von oben (mm)<input type="number" min="25" max="75" step="1" data-inv-field="addressY"></label><label class="field full">Logo ersetzen (JPG/PNG)<input type="file" accept="image/png,image/jpeg" id="inv-logo-upload-0299"></label></div><div class="tools" style="margin:14px 0"><button class="primary" type="button" id="inv-save-0299">Rechnungslayout speichern</button><button class="secondary" type="button" id="inv-reset-0299">Standard wiederherstellen</button></div><p class="smallmuted">Die Einstellungen und das Logo werden nur lokal im Browser gespeichert. Testdruck mit deinem Umschlag erforderlich. Kein echter QR-Zahlteil und kein automatischer Versand.</p>`;root.appendChild(div);const populate=()=>{let x=getInvoiceLayout0299();div.querySelectorAll('[data-inv-field]').forEach(el=>el.value=x[el.dataset.invField]??'')};populate();document.getElementById('inv-save-0299').onclick=()=>{let x=getInvoiceLayout0299();div.querySelectorAll('[data-inv-field]').forEach(el=>x[el.dataset.invField]=el.type==='number'?Number(el.value):el.value);if(saveInvoiceLayout0299(x))toast('Rechnungslayout gespeichert')};document.getElementById('inv-reset-0299').onclick=()=>{if(confirm('Rechnungslayout zurücksetzen?')){localStorage.removeItem(INVOICE_LAYOUT_KEY_0299);populate();toast('Standard wiederhergestellt')}};document.getElementById('inv-logo-upload-0299').onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(!['image/jpeg','image/png'].includes(f.type)){alert('Bitte JPG oder PNG auswählen');return}if(f.size>800000){alert('Logo bitte unter 800 KB wählen');return}const r=new FileReader();r.onload=()=>{let x=getInvoiceLayout0299();x.logo=r.result;if(saveInvoiceLayout0299(x))toast('Logo gespeichert')};r.readAsDataURL(f)}}
-function printInvoice0299(i){const w=window.open('','_blank');if(!w){toast('Pop-up blockiert. Bitte Pop-ups erlauben.');return}const x=getInvoiceLayout0299();const esc=v=>safe(String(v??''));const money=n=>Number(n||0).toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2});const deadline=invoiceDeadline(i);const start=(i.lines||[]).map(l=>l.date).filter(Boolean).sort()[0];const period=start?new Date(start+'T12:00:00').toLocaleDateString('de-CH',{month:'long',year:'numeric'}):'Monatsabrechnung';const rows=(i.lines||[]).map(l=>`<tr><td>${esc(displayDate(l.date))}</td><td>${esc(l.label)}</td><td class="money">${money(l.amount)}</td></tr>`).join('');const paid=typeof invoicePaid==='function'?invoicePaid(i):0;const due=typeof invoiceDue==='function'?invoiceDue(i):i.total;const address=[i.name,i.address].filter(Boolean).map(esc).join('<br>');const intro=esc(x.intro).replace(/\n/g,'<br>');const closing=esc(x.closing).replace(/\n/g,'<br>');const html=`<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>Rechnung ${esc(i.number)}</title><style>@page{size:A4 portrait;margin:12mm 15mm}html,body{width:auto;margin:0;padding:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#20252a;font-size:11pt}.sheet{width:180mm;min-height:260mm;position:relative;padding:0;margin:0;display:block}.logo{position:absolute;left:0;top:3mm;width:61mm;height:23mm;object-fit:contain;object-position:left center}.sender{position:absolute;top:2mm;right:0;width:78mm;font-size:9pt;line-height:1.45;text-align:left}.return{position:absolute;top:49mm;left:95mm;font-size:7pt;color:#555;white-space:nowrap}.address{position:absolute;left:95mm;top:58mm;width:81mm;min-height:26mm;line-height:1.45;font-size:10.5pt}.details{position:absolute;top:85mm;left:0;right:0;margin-top:0}.place-date{text-align:right;font-size:10pt;margin-bottom:5mm}h1{font-size:18pt;margin:0 0 5mm}.meta{font-size:10pt;margin-bottom:7mm}.rule{height:2px;background:#22bced;margin:5mm 0}table{width:100%;border-collapse:collapse;font-size:9.5pt}th{background:#eaf8fc;border-bottom:1px solid #22bced;text-align:left}th,td{padding:3mm 2mm;vertical-align:top}td{border-bottom:1px solid #e3e7eb}.money{text-align:right;white-space:nowrap}.total{display:flex;justify-content:flex-end;gap:20mm;margin-top:6mm;font-weight:bold;font-size:13pt}.copy{line-height:1.5;margin-top:11mm;font-size:10pt}.foot{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;font-size:8pt;color:#6a6a6a}.placeholder{margin-top:90mm;text-align:center;color:#626b72;border:1px dashed #adb7c0;padding:15mm 8mm}.actions{position:fixed;top:10px;right:10px;background:#fff;border:1px solid #ddd;padding:10px;z-index:5}button{padding:10px 14px;cursor:pointer}@media print{html,body{margin:0!important;padding:0!important;width:auto!important;height:auto!important}.actions{display:none!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.sheet{width:180mm!important;min-height:260mm!important;height:auto!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:0!important;break-after:auto!important;page-break-after:auto!important}}</style></head><body><div class="actions"><button onclick="window.print()">Drucken / Als PDF sichern</button></div><article class="sheet"><img class="logo" src="${esc(x.logo)}" alt="Fahrschule Finocchio Logo"><div class="sender"><b>${esc(x.company)}</b><br>${esc(x.street)} | ${esc(x.place)}<br>${esc(x.phone)}<br>${esc(x.email)}<br>${esc(x.web)}</div><div class="return">${esc(x.company)} | ${esc(x.street)} | ${esc(x.place)}</div><div class="address">${address||'Empfängeradresse fehlt'}</div><div class="details"><div class="place-date">Bülach, ${esc(displayDate(i.date))}</div><h1>Monatsrechnung · ${esc(period)}</h1><div class="meta"><b>Rechnung Nr. ${esc(i.number)}</b><br>Rechnungsdatum: ${esc(displayDate(i.date))} &nbsp; | &nbsp; Fällig am: ${esc(displayDate(deadline))}</div><div class="rule"></div><table><thead><tr><th style="width:23mm">Datum</th><th>Beschreibung</th><th class="money" style="width:30mm">Betrag CHF</th></tr></thead><tbody>${rows}</tbody></table><div class="total"><span>Rechnungstotal</span><span>CHF ${money(i.total)}</span></div>${paid>0?`<div class="total" style="font-size:10pt;font-weight:normal"><span>Bereits bezahlt</span><span>CHF ${money(paid)}</span></div><div class="total"><span>Noch offen</span><span>CHF ${money(due)}</span></div>`:''}<div class="copy">${intro}<br><br>${esc(x.terms)}<br><br>${closing}</div></div><div class="foot"><span>${esc(x.web)}</span><span>Seite 1 von 1</span></div></article></body></html>`;w.document.write(html);w.document.close();w.focus()}
-(function(){initInvoiceSettings0299();const original=openInvoice;openInvoice=function(id){original(id);const b=document.getElementById('invoiceprint');if(b)b.onclick=()=>{const i=invoices.find(x=>x.id===id);if(i)printInvoice0299(i)}};const side=document.querySelector('.sidefoot');if(side)side.innerHTML=side.innerHTML.replace('0.29.8','0.29.14')})();
+function initInvoiceSettings0299(){const root=document.querySelector('#settingspage .panel');if(!root)return;const div=document.createElement('div');div.id='invoice-layout-0299';div.innerHTML=`<hr style="margin:28px 0;border:0;border-top:1px solid #dde4ee"><h2>Rechnungslayout · Version 0.29.16</h2><p class="smallmuted">Rechnung Seite 1 im bisherigen Stil. Empfängeradresse rechts für A5-Fensterumschläge. Der QR-Zahlteil wird später ergänzt. PDF über Drucken → Als PDF sichern.</p><div class="formgrid"><label class="field">Firmenname<input data-inv-field="company"></label><label class="field">Strasse<input data-inv-field="street"></label><label class="field">PLZ / Ort<input data-inv-field="place"></label><label class="field">Telefon<input data-inv-field="phone"></label><label class="field">E-Mail<input data-inv-field="email"></label><label class="field">Website<input data-inv-field="web"></label><label class="field full">Begleittext<textarea data-inv-field="intro" rows="3"></textarea></label><label class="field full">Zahlungsbedingungen<textarea data-inv-field="terms" rows="2"></textarea></label><label class="field full">Grussformel<textarea data-inv-field="closing" rows="4"></textarea></label><label class="field">Empfängeradresse von links (mm)<input type="number" min="80" max="150" step="1" data-inv-field="addressX"></label><label class="field">Empfängeradresse von oben (mm)<input type="number" min="25" max="75" step="1" data-inv-field="addressY"></label><label class="field full">Logo ersetzen (JPG/PNG)<input type="file" accept="image/png,image/jpeg" id="inv-logo-upload-0299"></label></div><div class="tools" style="margin:14px 0"><button class="primary" type="button" id="inv-save-0299">Rechnungslayout speichern</button><button class="secondary" type="button" id="inv-reset-0299">Standard wiederherstellen</button></div><p class="smallmuted">Die Einstellungen und das Logo werden nur lokal im Browser gespeichert. Testdruck mit deinem Umschlag erforderlich. Kein echter QR-Zahlteil und kein automatischer Versand.</p>`;root.appendChild(div);const populate=()=>{let x=getInvoiceLayout0299();div.querySelectorAll('[data-inv-field]').forEach(el=>el.value=x[el.dataset.invField]??'')};populate();document.getElementById('inv-save-0299').onclick=()=>{let x=getInvoiceLayout0299();div.querySelectorAll('[data-inv-field]').forEach(el=>x[el.dataset.invField]=el.type==='number'?Number(el.value):el.value);if(saveInvoiceLayout0299(x))toast('Rechnungslayout gespeichert')};document.getElementById('inv-reset-0299').onclick=()=>{if(confirm('Rechnungslayout zurücksetzen?')){localStorage.removeItem(INVOICE_LAYOUT_KEY_0299);populate();toast('Standard wiederhergestellt')}};document.getElementById('inv-logo-upload-0299').onchange=e=>{const f=e.target.files?.[0];if(!f)return;if(!['image/jpeg','image/png'].includes(f.type)){alert('Bitte JPG oder PNG auswählen');return}if(f.size>800000){alert('Logo bitte unter 800 KB wählen');return}const r=new FileReader();r.onload=()=>{let x=getInvoiceLayout0299();x.logo=r.result;if(saveInvoiceLayout0299(x))toast('Logo gespeichert')};r.readAsDataURL(f)}}
+function printInvoice0299(i){
+  const x=getInvoiceLayout0299();
+  const esc=v=>safe(String(v??''));
+  const money=n=>Number(n||0).toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const deadline=invoiceDeadline(i);
+  const first=(i.lines||[]).map(l=>l.date).filter(Boolean).sort()[0];
+  const period=first?new Date(first+'T12:00:00').toLocaleDateString('de-CH',{month:'long',year:'numeric'}):'Monatsabrechnung';
+  const rows=(i.lines||[]).map(l=>`<tr><td>${esc(displayDate(l.date))}</td><td>${esc(l.label)}</td><td class="amount">${money(l.amount)}</td></tr>`).join('');
+  const paid=typeof invoicePaid==='function'?invoicePaid(i):0;
+  const due=typeof invoiceDue==='function'?invoiceDue(i):i.total;
+  const student=students.find(st=>st.id===i.student)||{};
+  const street=student.street||String(i.address||'').split(',')[0].trim();
+  const town=[student.postalCode,student.city].filter(Boolean).join(' ')||String(i.address||'').split(',').slice(1).join(',').trim();
+  const addr=[i.name,street,town].filter(Boolean).map(esc).join('<br>');
+  const pdfData={number:i.number,date:displayDate(i.date),deadline:displayDate(deadline),period,name:i.name,street,town,lines:(i.lines||[]).map(l=>({date:displayDate(l.date),label:l.label,amount:Number(l.amount||0)})),total:Number(i.total||0),paid:Number(paid||0),due:Number(due||0),company:x.company,companyStreet:x.street,companyPlace:x.place,phone:x.phone,email:x.email,web:x.web,intro:x.intro,terms:x.terms,closing:x.closing,logo:x.logo};
+  const html=`<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rechnung ${esc(i.number)} – Fahrschule Finocchio</title>
+<style>
+@page{size:A4 portrait;margin:12mm 15mm}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:white;color:#20252a;font-family:Arial,Helvetica,sans-serif}
+body{font-size:10pt}
+.toolbar{padding:12px 20px;background:#eef5f8;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toolbar button{background:#0c96bb;color:white;border:0;border-radius:6px;padding:10px 15px;font-size:14px;cursor:pointer}
+.toolbar small{color:#445}
+.paper{width:180mm;min-height:255mm;margin:15px auto;background:white;position:relative}
+@media screen{body{overflow-x:auto}.paper{margin:20px auto!important;max-width:calc(100vw - 36px);padding:12px!important}.toolbar{position:sticky;top:0;z-index:2}}
+.header{height:42mm;display:flex;align-items:flex-start;justify-content:space-between}
+.logo{display:block;width:61mm;max-height:26mm;object-fit:contain;object-position:left top}
+.sender{width:75mm;line-height:1.4;font-size:9pt}
+.address-area{height:46mm;display:flex;justify-content:flex-end}
+.address-box{width:85mm;align-self:flex-start}
+.return{font-size:7pt;line-height:1.3;color:#555;white-space:nowrap;border-bottom:1px solid #cbd2d5;padding-bottom:2mm}
+.recipient{padding-top:6mm;font-size:10.5pt;line-height:1.5}
+.date{text-align:right;margin:0 0 5mm}
+h1{font-size:18pt;margin:0 0 4mm}
+.meta{line-height:1.55;margin-bottom:6mm}
+.rule{height:2px;background:#22bced;margin:5mm 0}
+table{width:100%;border-collapse:collapse;font-size:9.5pt}
+th{background:#eaf8fc;border-bottom:1px solid #22bced;text-align:left}
+th,td{padding:3mm 2mm;vertical-align:top}
+td{border-bottom:1px solid #e3e7eb}
+.amount{text-align:right;white-space:nowrap}
+.total{display:flex;justify-content:flex-end;gap:20mm;margin-top:6mm;font-weight:bold;font-size:13pt}
+.copy{line-height:1.5;margin-top:11mm;font-size:10pt;white-space:normal}
+.footer{margin-top:20mm;padding-top:3mm;border-top:1px solid #e4e4e4;display:flex;justify-content:space-between;font-size:8pt;color:#666}
+@media screen{.paper{box-shadow:0 2px 15px #0002;padding:0}}
+@media print{
+html,body{width:auto!important;min-height:0!important;height:auto!important;overflow:visible!important;background:white!important}
+.toolbar{display:none!important}
+.paper{display:block!important;visibility:visible!important;width:180mm!important;min-height:0!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;box-shadow:none!important;overflow:visible!important;position:static!important}
+.header,.address-area,.address-box,.sender,.recipient,.return,.date,.meta,.copy,.footer{visibility:visible!important}
+tr{break-inside:avoid;page-break-inside:avoid}
+body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head><body>
+<div class="toolbar"><button id="pdfbtn" type="button">PDF herunterladen (empfohlen)</button><button id="printbtn" type="button">Safari-Druck testen</button><small>PDF zuerst herunterladen, danach mit Vorschau öffnen und drucken.</small></div>
+<main class="paper">
+<header class="header"><img class="logo" src="${esc(x.logo)}" alt="Fahrschule Finocchio"><div class="sender"><b>${esc(x.company)}</b><br>${esc(x.street)} | ${esc(x.place)}<br>${esc(x.phone)}<br>${esc(x.email)}<br>${esc(x.web)}</div></header>
+<section class="address-area"><div class="address-box"><div class="return">${esc(x.company)} | ${esc(x.street)} | ${esc(x.place)}</div><div class="recipient">${addr||'Empfängeradresse fehlt'}</div></div></section>
+<div class="date">Bülach, ${esc(displayDate(i.date))}</div>
+<h1>Monatsrechnung · ${esc(period)}</h1>
+<div class="meta"><b>Rechnung Nr. ${esc(i.number)}</b><br>Rechnungsdatum: ${esc(displayDate(i.date))} &nbsp; | &nbsp; Fällig am: ${esc(displayDate(deadline))}</div>
+<div class="rule"></div>
+<table><thead><tr><th style="width:25mm">Datum</th><th>Beschreibung</th><th class="amount" style="width:31mm">Betrag CHF</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="total"><span>Rechnungstotal</span><span>CHF ${money(i.total)}</span></div>
+${paid>0?`<div class="total" style="font-size:10pt;font-weight:normal"><span>Bereits bezahlt</span><span>CHF ${money(paid)}</span></div><div class="total"><span>Noch offen</span><span>CHF ${money(due)}</span></div>`:''}
+<div class="copy">${esc(x.intro).replace(/\n/g,'<br>')}<br><br>${esc(x.terms)}<br><br>${esc(x.closing).replace(/\n/g,'<br>')}</div>
+<footer class="footer"><span>${esc(x.web)}</span><span>Seite 1</span></footer>
+</main>
+<script>
+const invoiceData=${JSON.stringify(pdfData).replace(/</g,"\\u003c")};
+function pdfMoney(n){return Number(n||0).toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+async function makePDF(){
+ const btn=document.getElementById('pdfbtn');btn.disabled=true;btn.textContent='PDF wird erstellt …';
+ try{
+ const W=1240,H=1754,scale=W/210,c=document.createElement('canvas');c.width=W;c.height=H;
+ const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ const mm=v=>v*scale;
+ const color=(v)=>{ctx.fillStyle=v};
+ function font(size,bold=false){ctx.font=(bold?'bold ':'')+Math.round(size*scale/2.835)+'px Arial, sans-serif'}
+ function t(str,x,y,size=10,bold=false,fill='#20252a'){color(fill);font(size,bold);ctx.fillText(String(str||''),mm(x),mm(y))}
+ function line(x1,y1,x2,y2,fill='#dbe3e7',width=.2){ctx.strokeStyle=fill;ctx.lineWidth=mm(width);ctx.beginPath();ctx.moveTo(mm(x1),mm(y1));ctx.lineTo(mm(x2),mm(y2));ctx.stroke()}
+ function right(str,x,y,size=10,bold=false,fill='#20252a'){font(size,bold);const w=ctx.measureText(String(str)).width/mm(1);t(str,x-w,y,size,bold,fill)}
+ function wrap(str,x,y,width,size=10,leading=5.3,bold=false){font(size,bold);let words=String(str||'').split(/\\s+/),row='';for(const word of words){const test=row?row+' '+word:word;if(ctx.measureText(test).width>mm(width)&&row){t(row,x,y,size,bold);y+=leading;row=word}else row=test}if(row){t(row,x,y,size,bold);y+=leading}return y}
+ // Fixed A4 page geometry, all coordinates in mm.
+ const logo=new Image();logo.src=invoiceData.logo;
+ try{await logo.decode();let r=Math.min(58/logo.naturalWidth,27/logo.naturalHeight);ctx.drawImage(logo,mm(16),mm(16),mm(logo.naturalWidth*r),mm(logo.naturalHeight*r))}catch(e){}
+ t(invoiceData.company,113,20,9,true);t(invoiceData.companyStreet+' | '+invoiceData.companyPlace,113,26,8);
+ t(invoiceData.phone,113,31,8);t(invoiceData.email,113,36,8);t(invoiceData.web,113,41,8);
+ t(invoiceData.company+' | '+invoiceData.companyStreet+' | '+invoiceData.companyPlace,112,61,6,false,'#555');line(112,63,194,63,'#cdd3d8',.15);
+ t(invoiceData.name,112,70,10);t(invoiceData.street,112,76,10);t(invoiceData.town,112,82,10);
+ right('Bülach, '+invoiceData.date,194,104,9);
+ t('Monatsrechnung · '+invoiceData.period,16,117,17,true);
+ t('Rechnung Nr. '+invoiceData.number,16,126,10,true);
+ t('Rechnungsdatum: '+invoiceData.date+'   |   Fällig am: '+invoiceData.deadline,16,132,9);
+ line(16,141,194,141,'#22bced',.5);
+ ctx.fillStyle='#eaf8fc';ctx.fillRect(mm(16),mm(146),mm(178),mm(9));
+ t('Datum',18,152,9,true);t('Beschreibung',43,152,9,true);right('Betrag CHF',192,152,9,true);
+ let y=162;
+ for(const row of invoiceData.lines){if(y>220)break;t(row.date,18,y,9);const next=wrap(row.label,43,y,112,9,5);right(pdfMoney(row.amount),192,y,9);y=Math.max(y+9,next+3);line(16,y-4,194,y-4);}
+ y+=9;right('Rechnungstotal',155,y,11,true);right('CHF '+pdfMoney(invoiceData.total),194,y,12,true);
+ if(invoiceData.paid>0){y+=7;right('Bereits bezahlt',155,y,9);right('CHF '+pdfMoney(invoiceData.paid),194,y,9);y+=7;right('Noch offen',155,y,10,true);right('CHF '+pdfMoney(invoiceData.due),194,y,10,true)}
+ y+=15;y=wrap(invoiceData.intro,16,y,178,9,5.4)+7;
+ y=wrap(invoiceData.terms,16,y,178,9,5.4)+6;
+ for(const para of invoiceData.closing.split('\\n')){if(para.trim())y=wrap(para,16,y,178,9,5.4);else y+=3}
+ line(16,280,194,280,'#ddd',.2);t(invoiceData.web,16,285,7,false,'#666');right('Seite 1',194,285,7,false,'#666');
+ const jpeg=c.toDataURL('image/jpeg',.92).split(',')[1];const binary=atob(jpeg);const img=new Uint8Array(binary.length);for(let j=0;j<binary.length;j++)img[j]=binary.charCodeAt(j);
+ const enc=new TextEncoder(),parts=[],offsets=[0];let length=0;
+ const add=a=>{parts.push(a);length+=a.length};const txt=v=>add(enc.encode(v));
+ const obj=(n,body)=>{offsets[n]=length;txt(n+' 0 obj\\n'+body+'\\nendobj\\n')};
+ txt('%PDF-1.4\\n');obj(1,'<</Type/Catalog/Pages 2 0 R>>');obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+ obj(3,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 595.276 841.89]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>');
+ offsets[4]=length;txt('4 0 obj\\n<</Type/XObject/Subtype/Image/Width '+W+'/Height '+H+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+img.length+'>>\\nstream\\n');add(img);txt('\\nendstream\\nendobj\\n');
+ const stream='q\\n595.276 0 0 841.89 0 0 cm\\n/Im0 Do\\nQ\\n';obj(5,'<</Length '+enc.encode(stream).length+'>>\\nstream\\n'+stream+'endstream');
+ const xref=length;txt('xref\\n0 6\\n0000000000 65535 f \\n');for(let j=1;j<=5;j++)txt(String(offsets[j]).padStart(10,'0')+' 00000 n \\n');txt('trailer\\n<</Size 6/Root 1 0 R>>\\nstartxref\\n'+xref+'\\n%%EOF');
+ const blob=new Blob(parts,{type:'application/pdf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Rechnung_'+invoiceData.number+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }catch(err){alert('PDF-Erstellung fehlgeschlagen: '+err.message)}finally{btn.disabled=false;btn.textContent='PDF herunterladen (empfohlen)'}
+}
+document.getElementById('pdfbtn').addEventListener('click',makePDF);
+document.getElementById('printbtn').addEventListener('click',async function(){
+  await Promise.all(Array.from(document.images).map(img=>img.decode().catch(()=>{})));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+});
+<\/script></body></html>`;
+  const w=window.open('','_blank');
+  if(!w){toast('Pop-up blockiert. Bitte Pop-ups für diese Seite erlauben.');return}
+  w.document.open();w.document.write(html);w.document.close();
+}
+
+(function(){initInvoiceSettings0299();const original=openInvoice;openInvoice=function(id){original(id);const b=document.getElementById('invoiceprint');if(b)b.onclick=()=>{const i=invoices.find(x=>x.id===id);if(i)printInvoice0299(i)}};const side=document.querySelector('.sidefoot');if(side)side.innerHTML=side.innerHTML.replace('0.29.8','0.29.16')})();
 </script></body></html>
